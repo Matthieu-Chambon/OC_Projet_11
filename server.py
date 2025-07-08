@@ -1,3 +1,5 @@
+print(">> Flask app loaded")
+
 import json
 from flask import Flask,render_template,request,redirect,flash,url_for
 
@@ -26,9 +28,12 @@ def index():
 
 @app.route('/showSummary',methods=['POST'])
 def showSummary():
-    club = [club for club in clubs if club['email'] == request.form['email']][0]
-    return render_template('welcome.html',club=club,competitions=competitions)
-
+    try:
+        club = [club for club in clubs if club['email'] == request.form['email']][0]
+        return render_template('welcome.html',club=club,competitions=competitions)
+    except IndexError:
+        flash("Adresse email inconnue, veuillez réessayer.")
+        return redirect(url_for('index'))
 
 @app.route('/book/<competition>/<club>')
 def book(competition,club):
