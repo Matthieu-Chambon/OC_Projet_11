@@ -6,12 +6,21 @@
 </head>
 <body>
     <h2>{{competition['name']}}</h2>
-    Places available: {{competition['numberOfPlaces']}}
+    Places available: {{competition['numberOfPlaces']}}. Your club has {{club['points']}} points available.
     <form action="/purchasePlaces" method="post">
         <input type="hidden" name="club" value="{{club['name']}}">
         <input type="hidden" name="competition" value="{{competition['name']}}">
-        <label for="places">How many places?</label><input type="number" name="places" id=""/>
+        <label for="places">How many places?</label><input type="number" name="places" id="places-label"/>
         <button type="submit">Book</button>
     </form>
+    {% with messages = get_flashed_messages()%}
+        {% if messages %}
+            <ul>
+        {% for message in messages %}
+                <li>{{message}}</li>
+            {% endfor %}
+        </ul>
+        {% endif%}
+    {%endwith%}
 </body>
 </html>

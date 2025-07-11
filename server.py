@@ -51,9 +51,20 @@ def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     placesRequired = int(request.form['places'])
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
-    flash('Great-booking complete!')
-    return render_template('welcome.html', club=club, competitions=competitions)
+    
+    if placesRequired <= 0 :
+        flash('You must book at least one place.')
+        return render_template('booking.html', club=club, competition=competition)
+    elif placesRequired > int(club['points']):
+        flash('You do not have enough points to book this competition.')
+        return render_template('booking.html', club=club, competition=competition)
+    else:
+        competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
+        clubs[clubs.index(club)]['points'] = str(int(club['points'])-placesRequired)
+        with open('clubs.json', 'w') as f:
+                json.dump({'clubs': clubs}, f, indent=4)
+        flash('Great-booking complete!')
+        return render_template('welcome.html', club=club, competitions=competitions)
 
 
 # TODO: Add route for points display
