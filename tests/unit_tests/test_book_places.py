@@ -13,8 +13,13 @@ class TestBookPlaces:
             [
                 {
                     'name': 'Competition A',
-                    'date': '2020-03-27 10:00:00',
+                    'date': '2030-03-27 10:00:00',
                     'numberOfPlaces': '20'
+                },
+                {
+                    'name': 'Competition B',
+                    'date': '2020-04-15 12:00:00',
+                    'numberOfPlaces': '30'
                 }
             ]
         )
@@ -114,6 +119,23 @@ class TestBookPlaces:
             )
             self.mock_flash.assert_called_once_with('You cannot book more than 12 places for a single competition.')
             
+    def test_book_places_past_competition(self, setup_method):
+        with app.test_request_context(
+            '/purchasePlaces', method='POST', data={
+                'competition': 'Competition B',
+                'club': 'Club 1',
+                'places': '2'
+            }
+        ):
+            response = purchasePlaces()
+
+            assert server.clubs[0]['points'] == '15'
+            self.mock_template.assert_called_once_with(
+                'welcome.html',
+                club=server.clubs[0],
+                competitions=server.competitions,
+            )
+            self.mock_flash.assert_called_once_with("Impossible to book places for a past competition.")
 
 class TestGetPlacesBooked:
     """
