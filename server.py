@@ -14,6 +14,21 @@ def loadCompetitions():
     with open('competitions.json') as comps:
          listOfCompetitions = json.load(comps)['competitions']
          return listOfCompetitions
+     
+     
+def total_places_booked(competition, club):
+    """
+    Returns the total number of places booked by a club for a specific competition.
+    If no bookings exist, returns 0.
+    """
+    if "bookings" not in competition:
+        competition["bookings"] = []
+    
+    bookings = competition["bookings"]
+    for b in bookings:
+        if b["club"] == club["name"]:
+            return b["places"]
+    return 0
 
 
 app = Flask(__name__)
@@ -40,7 +55,12 @@ def book(competition,club):
     foundClub = [c for c in clubs if c['name'] == club][0]
     foundCompetition = [c for c in competitions if c['name'] == competition][0]
     if foundClub and foundCompetition:
-        return render_template('booking.html',club=foundClub,competition=foundCompetition)
+        return render_template(
+            'booking.html',
+            club=foundClub,
+            competition=foundCompetition,
+            total_places_booked=total_places_booked(foundCompetition, foundClub)
+        )
     else:
         flash("Something went wrong-please try again")
         return render_template('welcome.html', club=club, competitions=competitions)
@@ -51,18 +71,40 @@ def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     placesRequired = int(request.form['places'])
+    placesBooked = total_places_booked(competition, club)
     
     if placesRequired <= 0 :
         flash('You must book at least one place.')
-        return render_template('booking.html', club=club, competition=competition)
+        return render_template('booking.html', club=club, competition=competition, total_places_booked=placesBooked)
+    
     elif placesRequired > int(club['points']):
         flash('You do not have enough points to book this competition.')
-        return render_template('booking.html', club=club, competition=competition)
+        return render_template('booking.html', club=club, competition=competition, total_places_booked=placesBooked)
+
+    elif placesBooked + placesRequired > 12:
+        flash('You cannot book more than 12 places for a single competition.')
+        return render_template('booking.html', club=club, competition=competition, total_places_booked=placesBooked)
+
     else:
         competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
         clubs[clubs.index(club)]['points'] = str(int(club['points'])-placesRequired)
+
+        for booking in competition.get('bookings', []):
+            if booking['club'] == club['name']:
+                booking['places'] += placesRequired
+                break
+        else:
+            competition['bookings'].append({
+                "club": club['name'],
+                "places": placesRequired
+            })
+        
         with open('clubs.json', 'w') as f:
-                json.dump({'clubs': clubs}, f, indent=4)
+            json.dump({'clubs': clubs}, f, indent=4)
+        
+        with open('competitions.json', 'w') as f:
+            json.dump({'competitions': competitions}, f, indent=4)
+                
         flash('Great-booking complete!')
         return render_template('welcome.html', club=club, competitions=competitions)
 
