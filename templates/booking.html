@@ -2,11 +2,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
     <title>Booking for {{competition['name']}} || GUDLFT</title>
 </head>
 <body>
     <h2>{{competition['name']}}</h2>
-    <div style="display: flex; flex-direction: column;">
+    <div>
         <p>Places available: {{competition['numberOfPlaces']}}.</p>
         <p>Your club has {{club['points']}} points available.</p>
         <p>You already booked {{ total_places_booked }} places for this competition.</p>
