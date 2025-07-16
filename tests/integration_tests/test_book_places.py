@@ -19,6 +19,7 @@ class TestBookPlaces:
             competitions = competitions_data['competitions']
             cls.original_competition = competitions[0]
             cls.past_competition = competitions[1]
+            cls.not_enough_places_competition = competitions[2]
     
     def setup_method(self):
         """
@@ -134,6 +135,27 @@ class TestBookPlaces:
         assert b"Impossible to book places for a past competition." in response.data
         assert server.clubs[0]['points'] == self.original_club['points']
 
+        with open('clubs.json', 'r') as f:
+            clubs_data = json.load(f)
+            clubs = clubs_data['clubs']
+            club = clubs[0]
+            assert club['points'] == self.original_club['points']
+            
+    def test_book_places_not_enough_places(self):
+        """
+        Test booking places when there are not enough places available.
+        """
+        app = server.app.test_client()
+        response = app.post('/purchasePlaces', data={
+            'competition': self.not_enough_places_competition['name'],
+            'club': self.original_club['name'],
+            'places': str(int(self.not_enough_places_competition['numberOfPlaces']) + 1)
+        }, follow_redirects=True)
+        
+        assert response.status_code == 200
+        assert b"There are not enough places available for this competition." in response.data
+        assert server.clubs[0]['points'] == self.original_club['points']
+        
         with open('clubs.json', 'r') as f:
             clubs_data = json.load(f)
             clubs = clubs_data['clubs']
