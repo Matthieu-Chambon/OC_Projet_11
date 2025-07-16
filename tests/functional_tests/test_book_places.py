@@ -136,4 +136,25 @@ class TestBookPlaces:
         assert self.browser.find_element(By.XPATH, "//li[contains(text(), 'You must book at least one place.')]")
         assert server.clubs[0]['points'] == self.original_club['points']
         
+    def test_book_more_than_12_places(self):
+        """
+        Test booking more than 12 places and check for error message.
+        """
+        self.browser.find_element(By.LINK_TEXT, "Book Places").click()
+        
+        WebDriverWait(self.browser, 5).until(
+            EC.visibility_of_element_located((By.ID, "places-label"))
+        )
+        
+        self.browser.find_element(By.ID, "places-label").send_keys("13")
+        self.browser.find_element(By.TAG_NAME, "button").click()
+        
+        WebDriverWait(self.browser, 5).until(
+            EC.visibility_of_element_located((By.XPATH, "//li[contains(text(), 'You cannot book more than 12 places for a single competition.')]"))
+        )
+        
+        assert self.browser.find_element(By.XPATH, "//li[contains(text(), 'You cannot book more than 12 places for a single competition.')]")
+        assert server.clubs[0]['points'] == self.original_club['points']
+        
+        
         

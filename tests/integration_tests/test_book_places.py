@@ -1,6 +1,8 @@
 import server
 import shutil
 import json
+import time
+
 
 class TestBookPlaces:
     def setup_class(cls):
@@ -22,6 +24,7 @@ class TestBookPlaces:
         Create a backup of the clubs.json file before each test.
         """
         shutil.copyfile('clubs.json', 'clubs_backup.json')
+        shutil.copyfile('competitions.json', 'competitions_backup.json')
         server.clubs = server.loadClubs()
 
     def teardown_method(self):
@@ -29,6 +32,7 @@ class TestBookPlaces:
         Restore the original clubs.json file after each test.
         """
         shutil.move('clubs_backup.json', 'clubs.json')
+        shutil.move('competitions_backup.json', 'competitions.json')
         
     def test_book_places_success(self):
         """
@@ -87,6 +91,27 @@ class TestBookPlaces:
         assert b"You must book at least one place." in response.data
         assert server.clubs[0]['points'] == self.original_club['points']
         
+        with open('clubs.json', 'r') as f:
+            clubs_data = json.load(f)
+            clubs = clubs_data['clubs']
+            club = clubs[0]
+            assert club['points'] == self.original_club['points']
+    
+    def test_book_more_than_12_places(self):
+        """
+        Test booking more than 12 places for a single competition.
+        """
+        app = server.app.test_client()
+        response = app.post('/purchasePlaces', data={
+            'competition': self.original_competition['name'],
+            'club': self.original_club['name'],
+            'places': '13'
+        }, follow_redirects=True)
+
+        assert response.status_code == 200
+        assert b"You cannot book more than 12 places for a single competition." in response.data
+        assert server.clubs[0]['points'] == self.original_club['points']
+
         with open('clubs.json', 'r') as f:
             clubs_data = json.load(f)
             clubs = clubs_data['clubs']
