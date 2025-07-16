@@ -1,0 +1,40 @@
+html body{
+    font-family: 'Arial';
+    background-color: #021526;
+    color: white
+}
+
+a {
+    color: #00eeff;
+}
+
+
+table {
+    border-collapse: collapse;
+    border: 1px solid white;
+}
+
+thead th {
+    background-color: #1a1a1a;
+    padding: 12px;
+    text-align: left;
+    border: 1px solid white;
+    border-bottom-width: 3px;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #2a2a2a;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: #5a5a5a;
+}
+
+td {
+    padding: 10px;
+    border: 1px solid white;
+}
+
+td:nth-child(2) {
+    text-align: center;
+}
