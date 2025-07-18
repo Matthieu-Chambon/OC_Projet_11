@@ -4,6 +4,7 @@ from locust import HttpUser, task, between
 class PerformanceTest(HttpUser):
     wait_time = between(0.1, 1)
     
+    @task
     def index(self):
         self.client.get('/')
      
